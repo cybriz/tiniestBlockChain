@@ -1,27 +1,26 @@
-const SHA256 = require('crypto-js/sha256')
+const SHA256 = require("crypto-js/sha256")
 
-class Block{
-    constructor(index, timestamp, data, previousHash = ''){
-        this.index = index
-        this.timestamp = timestamp
-        this.data = data
-        this.previousHash = previousHash
+class Block {
+    constructor(index, timestamp, data, previousHash = '') {
+        this.index = index;
+        this.timestamp = timestamp;
+        this.data = data;
+        this.previousHash = previousHash;
         this.hash = this.calculateHash();
     }
 
     calculateHash(){
-        return SHA256(this.index, this.timestamp, this.previousHash, JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
     }
 }
 
-class BlockChain{
+class Blockchain {
     constructor(){
         this.chain = [this.createGenesisBlock()];
     }
 
-
     createGenesisBlock(){
-        return new Block(0, "01/01/2017", "Genesis block", "0");
+        return new Block(0, "25/01/2019", "Genesis block", "0");
     }
 
     getLatestBlock(){
@@ -31,28 +30,38 @@ class BlockChain{
     addBlock(newBlock){
         newBlock.previousHash = this.getLatestBlock().hash;
         newBlock.hash = newBlock.calculateHash();
+        console.log("hash: ", newBlock.hash = newBlock.calculateHash())
         this.chain.push(newBlock);
     }
 
     isChainValid(){
-        for(let i=1; i < this.chain.length; i++){
+        for(let i = 1; i < this.chain.length; i++){
             const currentBlock = this.chain[i];
-            const previousBlock = this.chain[i-1];
+            const previousBlock = this.chain[i - 1];
 
             if(currentBlock.hash !== currentBlock.calculateHash()) {
+                console.log("hi")
                 return false;
             }
 
             if(currentBlock.previousHash !== previousBlock.hash){
+                console.log("hey")
                 return false;
             }
         }
+        console.log("hello")
         return true;
     }
 }
 
-let sampleCoin = new BlockChain();
-sampleCoin.addBlock(new Block(1, "10/07/2017", { amount: 4 }));
-sampleCoin.addBlock(new Block(1, "11/07/2017", { amount: 100 }));
+let sampleCoin = new Blockchain();
+sampleCoin.addBlock(new Block(1, '26/01/2019', { amount: 4 }));
+sampleCoin.addBlock(new Block(2, '27/02/2019', { amount: 10 }));
+
+// console.log(JSON.stringify(sampleCoin, null , 4))
+console.log('is blockchain valid? ', sampleCoin.isChainValid());
+
+sampleCoin.chain[1].data = { amount: 100 };
+sampleCoin.hash = sampleCoin.chain[1].calculateHash();
 
 console.log('is blockchain valid? ', sampleCoin.isChainValid());
